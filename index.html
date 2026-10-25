@@ -82,7 +82,7 @@
 
         .photo-card {
             background: white;
-            padding: 12px; /* Uniform polaroid border */
+            padding: 12px;
             border-radius: 6px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.1);
             cursor: pointer;
@@ -173,38 +173,28 @@
             border-radius: 6px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
         }
-        .lightbox-caption {
-            color: white;
-            font-family: 'Georgia', serif;
-            font-style: italic;
-            font-size: 1.1rem;
-            margin-top: 18px;
-            text-align: center;
-            max-width: 600px;
-        }
-        .lightbox-counter {
-            color: #bbb;
-            font-size: 0.85rem;
-            margin-top: 8px;
-            letter-spacing: 2px;
-        }
-
+        
+        /* Clean Close Button */
         .lightbox-close {
             position: absolute;
-            top: -10px;
-            right: -10px;
-            background: var(--primary);
-            color: white;
+            top: -15px;
+            right: -15px;
+            background: white;
+            color: #333;
             border: none;
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, background 0.3s ease;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .lightbox-close:hover { transform: rotate(90deg); }
+        .lightbox-close:hover { transform: rotate(90deg); background: var(--primary); color: white; }
 
         .lightbox-nav {
             position: absolute;
@@ -238,6 +228,7 @@
             .lightbox-nav { width: 42px; height: 42px; font-size: 1rem; }
             .lightbox-nav.prev { left: 6px; }
             .lightbox-nav.next { right: 6px; }
+            .lightbox-close { top: -10px; right: -10px; width: 35px; height: 35px; font-size: 1rem; }
         }
     </style>
 </head>
@@ -261,10 +252,8 @@
     <!-- LIGHTBOX -->
     <div class="lightbox" id="lightbox">
         <div class="lightbox-content">
-            <button class="lightbox-close" id="lightboxClose">×</button>
+            <button class="lightbox-close" id="lightboxClose"><i class="fas fa-times"></i></button>
             <img src="" alt="" id="lightboxImg">
-            <div class="lightbox-caption" id="lightboxCaption"></div>
-            <div class="lightbox-counter" id="lightboxCounter"></div>
             <button class="lightbox-nav prev" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
             <button class="lightbox-nav next" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
         </div>
@@ -277,37 +266,35 @@
         /* ================================================================
            ADD YOUR PHOTOS HERE
            ================================================================
-           Each photo is one line: { src: "photos/1.jpg", caption: "..." }
+           Each photo is one line: { src: "photos/1.jpg" }
            Put your images in a folder called "photos" next to this file.
-           
-           Leave src as "" (empty) and it shows a placeholder box.
            ================================================================ */
         const PHOTOS = [
-            { src: "", caption: "Add your first photo" },
-            { src: "", caption: "Add a caption here" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "" },
-            { src: "", caption: "The last one ❤️" }
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" },
+            { src: "" }
         ];
 
         /* ================================================================
@@ -317,8 +304,6 @@
         const gallery = document.getElementById('gallery');
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = document.getElementById('lightboxImg');
-        const lightboxCaption = document.getElementById('lightboxCaption');
-        const lightboxCounter = document.getElementById('lightboxCounter');
         const lightboxClose = document.getElementById('lightboxClose');
         const lightboxPrev = document.getElementById('lightboxPrev');
         const lightboxNext = document.getElementById('lightboxNext');
@@ -336,7 +321,7 @@
             if (photo.src) {
                 const img = document.createElement('img');
                 img.src = photo.src;
-                img.alt = photo.caption || ('Photo ' + (index + 1));
+                img.alt = 'Photo ' + (index + 1);
                 img.loading = 'lazy';
                 frame.appendChild(img);
             } else {
@@ -366,9 +351,6 @@
                 lightboxImg.src = '';
                 lightboxImg.style.display = 'none';
             }
-
-            lightboxCaption.textContent = photo.caption || '';
-            lightboxCounter.textContent = (currentIndex + 1) + ' of ' + PHOTOS.length;
         }
 
         function closeLightbox() {

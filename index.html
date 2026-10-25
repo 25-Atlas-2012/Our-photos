@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Photos ❤️</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        :root {
+            --primary: #ff6b8b;
+            --secondary: #6a11cb;
+            --sea-green: #20B2AA;
+            --cream: #fffaf5;
+            --dark: #333;
+        }
+
+        body {
+            background: var(--cream);
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        /* subtle floating hearts in background */
+        .bg-hearts {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-hearts span {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.08;
+            animation: drift 18s linear infinite;
+        }
+        .bg-hearts span:nth-child(1) { left: 8%;  animation-delay: 0s;  }
+        .bg-hearts span:nth-child(2) { left: 22%; animation-delay: 3s;  }
+        .bg-hearts span:nth-child(3) { left: 37%; animation-delay: 6s;  }
+        .bg-hearts span:nth-child(4) { left: 52%; animation-delay: 9s;  }
+        .bg-hearts span:nth-child(5) { left: 68%; animation-delay: 12s; }
+        .bg-hearts span:nth-child(6) { left: 83%; animation-delay: 15s; }
+        @keyframes drift {
+            0%   { transform: translateY(110vh) rotate(0deg); }
+            100% { transform: translateY(-10vh) rotate(360deg); }
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            padding: 70px 20px 40px;
+        }
+        header h1 {
+            font-family: 'Georgia', serif;
+            font-size: 3rem;
+            background: linear-gradient(to right, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        header .divider {
+            width: 80px;
+            height: 3px;
+            margin: 0 auto;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+
+        /* GALLERY GRID */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 28px;
+            padding: 30px 0 80px;
+        }
+
+        .photo-card {
+            background: white;
+            padding: 12px; /* Uniform polaroid border */
+            border-radius: 6px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+            position: relative;
+        }
+        .photo-card:hover {
+            transform: translateY(-8px) rotate(-1deg);
+            box-shadow: 0 16px 35px rgba(0,0,0,0.18);
+        }
+
+        .photo-card .photo-frame {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .photo-card .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        .photo-card:hover .photo-frame img {
+            transform: scale(1.05);
+        }
+
+        /* placeholder look when no photo yet */
+        .photo-card .photo-frame.placeholder {
+            background: repeating-linear-gradient(45deg, #f5f5f5, #f5f5f5 12px, #ececec 12px, #ececec 24px);
+        }
+        .photo-card .photo-frame.placeholder::after {
+            content: '\f03e';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 2.4rem;
+            color: #c8c8c8;
+        }
+
+        /* little heart in the corner */
+        .photo-card::before {
+            content: '❤';
+            position: absolute;
+            top: 6px;
+            right: 14px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .photo-card:hover::before { opacity: 1; }
+
+        /* LIGHTBOX */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 78vh;
+            border-radius: 6px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+        .lightbox-caption {
+            color: white;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            margin-top: 18px;
+            text-align: center;
+            max-width: 600px;
+        }
+        .lightbox-counter {
+            color: #bbb;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            letter-spacing: 2px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+        .lightbox-close:hover { transform: rotate(90deg); }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .lightbox-nav:hover { background: rgba(255,255,255,0.35); }
+        .lightbox-nav.prev { left: -70px; }
+        .lightbox-nav.next { right: -70px; }
+
+        /* FOOTER */
+        footer {
+            padding: 40px 20px;
+            background: linear-gradient(to right, var(--sea-green), #2E8B57);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.2rem; }
+            .gallery { gap: 18px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+            .photo-card { padding: 8px; }
+            .lightbox-nav { width: 42px; height: 42px; font-size: 1rem; }
+            .lightbox-nav.prev { left: 6px; }
+            .lightbox-nav.next { right: 6px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background floating hearts -->
+    <div class="bg-hearts">
+        <span>❤</span><span>💛</span><span>❤</span><span>💛</span><span>❤</span><span>💛</span>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <h1>Our Photos ❤️</h1>
+        <div class="divider"></div>
+    </header>
+
+    <!-- GALLERY -->
+    <main class="container">
+        <div class="gallery" id="gallery"></div>
+    </main>
+
+    <!-- LIGHTBOX -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightboxClose">×</button>
+            <img src="" alt="" id="lightboxImg">
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+            <div class="lightbox-counter" id="lightboxCounter"></div>
+            <button class="lightbox-nav prev" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
+            <button class="lightbox-nav next" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <!-- FOOTER (Empty green strip) -->
+    <footer></footer>
+
+    <script>
+        /* ================================================================
+           ADD YOUR PHOTOS HERE
+           ================================================================
+           Each photo is one line: { src: "photos/1.jpg", caption: "..." }
+           Put your images in a folder called "photos" next to this file.
+           
+           Leave src as "" (empty) and it shows a placeholder box.
+           ================================================================ */
+        const PHOTOS = [
+            { src: "", caption: "Add your first photo" },
+            { src: "", caption: "Add a caption here" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "" },
+            { src: "", caption: "The last one ❤️" }
+        ];
+
+        /* ================================================================
+           Everything below builds the grid. You don't need to edit it.
+           ================================================================ */
+
+        const gallery = document.getElementById('gallery');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const lightboxCaption = document.getElementById('lightboxCaption');
+        const lightboxCounter = document.getElementById('lightboxCounter');
+        const lightboxClose = document.getElementById('lightboxClose');
+        const lightboxPrev = document.getElementById('lightboxPrev');
+        const lightboxNext = document.getElementById('lightboxNext');
+
+        let currentIndex = 0;
+
+        // Build the grid
+        PHOTOS.forEach((photo, index) => {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+
+            const frame = document.createElement('div');
+            frame.className = 'photo-frame';
+
+            if (photo.src) {
+                const img = document.createElement('img');
+                img.src = photo.src;
+                img.alt = photo.caption || ('Photo ' + (index + 1));
+                img.loading = 'lazy';
+                frame.appendChild(img);
+            } else {
+                frame.classList.add('placeholder');
+            }
+
+            card.appendChild(frame);
+            card.addEventListener('click', () => openLightbox(index));
+            gallery.appendChild(card);
+        });
+
+        // Lightbox logic
+        function openLightbox(index) {
+            currentIndex = index;
+            updateLightbox();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function updateLightbox() {
+            const photo = PHOTOS[currentIndex];
+
+            if (photo.src) {
+                lightboxImg.src = photo.src;
+                lightboxImg.style.display = 'block';
+            } else {
+                lightboxImg.src = '';
+                lightboxImg.style.display = 'none';
+            }
+
+            lightboxCaption.textContent = photo.caption || '';
+            lightboxCounter.textContent = (currentIndex + 1) + ' of ' + PHOTOS.length;
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function showPrev() {
+            currentIndex = (currentIndex - 1 + PHOTOS.length) % PHOTOS.length;
+            updateLightbox();
+        }
+
+        function showNext() {
+            currentIndex = (currentIndex + 1) % PHOTOS.length;
+            updateLightbox();
+        }
+
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightboxPrev.addEventListener('click', showPrev);
+        lightboxNext.addEventListener('click', showNext);
+
+        // Click outside the image closes it
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) closeLightbox();
+        });
+
+        // Keyboard: arrows + escape
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') showPrev();
+            if (e.key === 'ArrowRight') showNext();
+        });
+    </script>
+</body>
+</html>
